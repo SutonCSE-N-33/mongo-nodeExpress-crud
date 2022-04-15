@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hey mom look,,I have an mongo database</h1>
+    <form action="/addProduct" method="POST">
+        <input type="text" placeholder="Enter Product Name" name="name"><br>
+        <input type="text" placeholder="Enter Product quantity" name="quantity"><br>
+        <input type="text" placeholder="Enter Product price" name="price"><br>
+        <input type="submit" value="Submit">
+    </form>
+
+
+    <div id="container"></div>
+
+    <div id="updateProduct"></div>
+
+    <script>
+
+      function loadAllProducts(){
+        fetch('http://localhost:3000/products')
+      .then(res => res.json())
+      .then(data => {
+          data.forEach(product=> {
+            const container = document.getElementById('container');
+            const smallParent = document.createElement('div');
+            smallParent.innerHTML = `<strong> ${product.name} </strong>  Quantity: ${product.quantity}  Price: ${product.price} 
+            <button onclick="loadSingleProduct('${product._id}')">Update</button>                     
+            <button onclick="deleteProduct(event,'${product._id}')">Delete</button>`;
+            container.appendChild(smallParent);
+          });
+      })
+      }
+      loadAllProducts();
+
+
+      function deleteProduct(event,id){
+        fetch('/delete-item/' + id, {
+         method: 'DELETE',
+})
+.then(res => res.json()) // or res.json()
+.then(data => {
+  if(data){
+    event.target.parentNode.style.display = "none";
+  }
+})
+      }
+
+
+
+      function loadSingleProduct (id){
+                fetch(`/product/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                const parent = document.getElementById('updateProduct');
+                const secondParent = document.createElement('div');
+
+                secondParent.innerHTML=`<p>ID: ${data._id}</p>
+                <input type="text" value='${data.name}' name="name" /><br/>
+                <input type="text" value='${data.quantity}' id="quantity" /><br/>
+                <input type="text" value='${data.price}' id="price" /><br/>
+                <button onclick="updateProduct('${data._id}')">Submit</button>
+                `
+                parent.appendChild(secondParent);
+                })
+      }
+
+      function updateProduct(id){
+        const container = document.getElementById('container');
+        container.innerHTML = '';
+        const price = document.getElementById('price').value;
+        const quantity = document.getElementById('quantity').value;
+        const product = {id,quantity,price};
+        console.log(product)
+        fetch(`/upDateProduct/${id}`,{
+          method: "PATCH",
+          headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(product)
+        })
+        .then(res => res.json())
+        .then(data => {
+          if(data){
+            loadAllProducts()
+          }
+        })
+
+      }
+    </script>
+</body>
+</html>
